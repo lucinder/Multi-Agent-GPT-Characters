@@ -9,7 +9,7 @@ Original written by DougDoug, updated to be fully FOSS-dependent and require no 
 
 3) This uses Ollama for local chat AI (preferring the deepseek-r1:8b model) and pyttsx3 for local text-to-speech (TTS). Make sure you have Ollama installed and running, and a model of your choice pulled. I use deepseek-r1:8b, e.g. (run `ollama pull deepseek-r1:8b`).
 
-4) TTS is handled locally using PyWin32's SAPI.SpVoice engine. You can select a voice available on your system by passing its name into each agent's init function in multi_agent_gpt.py. No ElevenLabs account or API key is required.
+4) TTS is handled locally using PyWin32's SAPI.SpVoice engine. You can select a voice available on your system by passing its name into each agent's init function in multi_agent_gpt.py. No ElevenLabs account or API key is required. To disable TTS, you can turn off the TTS_ENABLED flag in OPTIONS.json.
 
 5) This app uses the open source Whisper model from OpenAi for transcribing audio into text. This means you'll be running an AI model locally on your PC, so ideally you have an Nvidia GPU to run this. This model was downloaded from Huggingface and should install automatically when you run the whisper_openai.py file. To switch to using text input, simply turn off the MICROPHONE_ENABLED flag in OPTIONS.json.
 
@@ -19,7 +19,7 @@ Original written by DougDoug, updated to be fully FOSS-dependent and require no 
 
 ## Using the App
 
-To start out, edit the prompts (AGENT_1_PROMPT.txt, AGENT_2_PROMPT.txt, etc.) in the prompts folder to design each agent's personality and the purpose of their conversation.  
+To start out, edit the prompts (AGENT_1_PROMPT.txt, AGENT_2_PROMPT.txt, etc.) in the prompts folder to design each agent's personality and the purpose of their conversation. I've provided a (partially complete) library of random traits based on some past DougDoug agents and my own favorite characters in random_traits_lib.json, as well as some other useful tables you can use for, e.g., random D&D-style character creation. In ai_prompts.py, you can generate a random agent prompt using generate_random_agent_prompt.
 By default the characters are told to discuss the greatest videogames of all time, but you can change this to anything you want. You can also change the preferred local model in OPTIONS.json, under MODEL_NAME.
 
 Next run multi_agent_gpt.py
@@ -34,10 +34,10 @@ This means that agent will continue the conversation and start talking. Unless i
 
 __Numpad2 will "activate" Agent #2, Numpad3 will "activate" Agent #3.__
 
-__F4 will "pause" all agents__   
+__F4 will "pause" all agents.__   
 This stops the agents from activating each other. Basically, use this to stop the conversation from continuing any further, and then you can talk to the agents again.
 
-__Numpad9 will forcibly stop the app__
+__Numpad9 will forcibly stop the app.__   
 This ends all agent threads and the input thread, and defers to the main thread to shut down the Flask app. Conversation history stored in backup files will be maintained if the app is re-run.
 
 ## Miscellaneous notes:

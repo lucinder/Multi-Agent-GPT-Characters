@@ -2,3 +2,4 @@
 tests
 backup_history_*
 backup
+__pycache__

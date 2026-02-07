@@ -41,17 +41,9 @@
     # If F4 pressed:
         # Toggles "pause" flag - stops all other agents from activating additional agents
     
-    # If 1 pressed:
+    # If Numpad 1, 2, 3, 4, 5, or 6 pressed:
         # Turns off "pause" flag
-        # Activates Agent 1
-    
-    # If 2 pressed: 
-        # Turns off "pause" flag
-        # Activates Agent 2
-    
-    # If 3 pressed: 
-        # Turns off "pause" flag
-        # Activates Agent 3
+        # Activates Agent of that #
 
     # If 9 pressed:
         # Sets shutdown event, which all threads are listening for, to end the program
@@ -248,6 +240,7 @@ class Human():
     def __init__(self, name, all_agents):
         self.name = name # This will be added to the beginning of the response
         self.all_agents = all_agents
+        self.agent_count = len(all_agents)
 
     def run(self):
         global agents_paused, MICROPHONE_ENABLED
@@ -314,27 +307,15 @@ class Human():
                 agents_paused = True
                 time.sleep(1) # Wait for a bit to ensure you don't press this twice in a row
             
-            # Activate Agent 1
-            if keyboard.is_pressed('num 1'):
-                print("[cyan]Activating Agent 1")
-                agents_paused = False
-                self.all_agents[0].activated = True
-                time.sleep(1) # Wait for a bit to ensure you don't press this twice in a row
-            
-            # Activate Agent 2
-            if keyboard.is_pressed('num 2'):
-                print("[cyan]Activating Agent 2")
-                agents_paused = False
-                self.all_agents[1].activated = True
-                time.sleep(1) # Wait for a bit to ensure you don't press this twice in a row
-            
-            # Activate Agent 3
-            if keyboard.is_pressed('num 3'):
-                print("[cyan]Activating Agent 3")
-                agents_paused = False
-                self.all_agents[2].activated = True
-                time.sleep(1) # Wait for a bit to ensure you don't press this twice in a row
-            
+            for idx in range(self.agent_count):
+                agent_number = idx + 1
+                # Activate Agent N
+                if keyboard.is_pressed('num {agent_number}') and self.agent_count >= agent_number:
+                    print("[cyan]Activating Agent {agent_number}")
+                    agents_paused = False
+                    self.all_agents[idx].activated = True
+                    time.sleep(1) # Wait for a bit to ensure you don't press this twice in a row
+                    
             time.sleep(0.05)
                 
 
