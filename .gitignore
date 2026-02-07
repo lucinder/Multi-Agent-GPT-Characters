@@ -1,0 +1,4 @@
+# Ignore testing folder, backups, and other temporary files
+tests
+backup_history_*
+backup
