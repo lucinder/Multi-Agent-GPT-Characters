@@ -1,6 +1,6 @@
 import pygame
 import time
-import os
+import os, json
 import asyncio
 import subprocess
 import threading
@@ -11,6 +11,16 @@ import soundfile as sf
 from mutagen.mp3 import MP3
 from pydub import AudioSegment
 from rich import print
+
+# Private global DEBUG flag inherited from OPTIONS.json
+_options_path = os.path.join(os.path.dirname(__file__), "OPTIONS.json")
+__DEBUG = False
+try:
+    with open(_options_path, "r") as _f:
+        _options = json.load(_f)
+    __DEBUG = _options.get("DEBUG", False)
+except Exception:
+    pass
 
 class AudioManager:
 
@@ -27,7 +37,7 @@ class AudioManager:
         # Use higher buffer because why not (default is 512)
         pygame.mixer.init(frequency=48000, buffer=1024) 
 
-    def play_audio(self, file_path, sleep_during_playback=True, delete_file=False, play_using_music=True):
+    def play_audio(self, file_path, sleep_during_playback=True, delete_file=True, play_using_music=True):
         """
         Parameters:
         file_path (str): path to the audio file
@@ -35,6 +45,9 @@ class AudioManager:
         delete_file (bool): means file is deleted after playback (note that this shouldn't be used for multithreaded function calls)
         play_using_music (bool): means it will use Pygame Music, if false then uses pygame Sound instead
         """
+        if file_path is None or not os.path.exists(file_path):
+            print(f"[bold red]ERROR: File '{file_path}' does not exist!")
+            return
         if not pygame.mixer.get_init(): # Reinitialize mixer if needed
             pygame.mixer.init(frequency=48000, buffer=1024) 
         if play_using_music:
@@ -44,8 +57,7 @@ class AudioManager:
                 pygame.mixer.music.play()
                 converted = False
             except:
-                # Wav files from Elevenlabs don't work with Pygame's Music for some fucking reason (works fine with Sound)
-                # If there's an error here that's likely why, so convert it to a format that Pygame can handle
+                # If there's an error here, convert it to a format that Pygame can handle
                 # You can't convert the file in place so just convert it into a temp file that you delete later
                 converted_wav = "temp_convert.wav"
                 subprocess.run(["ffmpeg", "-y", "-i", file_path, "-ar", "48000", "-ac", "2", "-c:a", "pcm_s16le", converted_wav])

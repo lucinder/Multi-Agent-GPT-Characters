@@ -1,35 +1,26 @@
 # Multi Agent GPT Characters
-Web app that allows 3 GPT characters and a human to talk to each other.  
-Written by DougDoug. Feel free to use this for whatever you want! Credit is appreciated but not required.  
-
-This is uploaded for educational purposes. Unfortunately I don't have time to offer individual support or review pull requests, but ChatGPT or Claude can be very helpful if you are running into issues.
+Web app that allows up to 3 GPT characters and a human to talk to each other.  
+Original written by DougDoug, updated to be fully FOSS-dependent and require no API calls by lucinder.
 
 ## SETUP:
-1) This was written in Python 3.9.2. Install page here: https://www.python.org/downloads/release/python-392/
+1) Originally written in Python 3.9.2, verified compatible with up to Python 3.13.
 
-2) Run `pip install -r requirements.txt` to install all modules.
+2) Run `pip install -r requirements.txt` to install all modules. For pytorch and torchaudio, you MUST separately install a CUDA-compatible torch version, e.g. via `pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124` (for CUDA 12.4). Refer to https://github.com/eminsafa/pytorch-cuda-compatibility.
 
-3) This uses the OpenAi API and Elevenlabs services. You'll need to set up an account with these services and generate an API key from them. Then add these keys as windows environment variables named OPENAI_API_KEY and ELEVENLABS_API_KEY respectively.
+3) This uses Ollama for local chat AI (preferring the deepseek-r1:8b model) and pyttsx3 for local text-to-speech (TTS). Make sure you have Ollama installed and running, and a model of your choice pulled. I use deepseek-r1:8b, e.g. (run `ollama pull deepseek-r1:8b`).
 
-4) This app uses the GPT-4o model from OpenAi. As of this writing (Sep 3rd 2024), you need to pay $5 to OpenAi in order to get access to the GPT-4o model API. So after setting up your account with OpenAi, you will need to pay for at least $5 in credits so that your account is given the permission to use the GPT-4o model when running my app. See here: https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4-gpt-4-turbo-gpt-4o-and-gpt-4o-mini
+4) TTS is handled locally using PyWin32's SAPI.SpVoice engine. You can select a voice available on your system by passing its name into each agent's init function in multi_agent_gpt.py. No ElevenLabs account or API key is required.
 
-5) Elevenlabs is the service I use for Ai voices. Once you've made Ai voices on the Elevenlabs website, open up multi_agent_gpt.py and make sure it's passing the name of your voices into each agent's init function.
+5) This app uses the open source Whisper model from OpenAi for transcribing audio into text. This means you'll be running an AI model locally on your PC, so ideally you have an Nvidia GPU to run this. This model was downloaded from Huggingface and should install automatically when you run the whisper_openai.py file. To switch to using text input, simply turn off the MICROPHONE_ENABLED flag in OPTIONS.json.
 
-6) This app uses the open source Whisper model from OpenAi for transcribing audio into text. This means you'll be running an Ai model locally on your PC, so ideally you have an Nvidia GPU to run this. The Whisper model is used to transcribe the user's microphone recordings, and is used to generate subtitles from the Elevenlabs audio every time an agent "speaks". This model was downloaded from Huggingface and should install automatically when you run the whisper_openai.py file.  
-Note that you'll want to make sure you've installed torch with CUDA support, rather than just default torch, otherwise it will run very slow: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118.  
-If you have issues with the Whisper model there are other services that can offer an audio-to-text service (including a Whisper API), but this solution currently works well for me.
+6) This code runs a Flask web app and will eventually display the agents' dialogue using HTML and javascript. The functionality of this is not fully verified with the current setup, and as such, most of the code related to dialogue display is commented out; I intend to re-implement this in the future. By default the Flask app will run the server on "127.0.0.1:5151", but you can change this in OPTIONS.json.
 
-7) This code runs a Flask web app and will display the agents' dialogue using HTML and javascript. By default it will run the server on "127.0.0.1:5151", but you can change this in multi_agent_gpt.py.
-
-8) Optionally, you can use OBS Websockets and an OBS plugin to make images move while talking.  
-First open up OBS. Make sure you're running version 28.X or later. Click Tools, then WebSocket Server Settings. Make sure "Enable WebSocket server" is checked. Then set Server Port to '4455' and set the Server Password to 'TwitchChat9'. If you use a different Server Port or Server Password in your OBS, just make sure you update the websockets_auth.py file accordingly.  
-Next install the Move OBS plugin: https://obsproject.com/forum/resources/move.913/ Now you can use this plugin to add a filter to an audio source that will change an image's transform based on the audio waveform. For example, I have a filter on a specific audio track that will move each agent's bell pepper icon source image whenever that pepper is talking.  
-Note that OBS must be open when you're running this code, otherwise OBS WebSockets won't be able to connect. If you don't need the images to move while talking, you can just delete the OBS portions of the code.
+7) To be implemented: Optionally, you can use OBS Websockets and an OBS plugin to make images move while talking (requires OBS 28.X or later). See [the original repo](https://github.com/DougDougGithub/Multi-Agent-GPT-Characters) for instructions on setting up OBS websockets.
 
 ## Using the App
 
-To start out, edit the ai_prompts.py file to design each agent's personality and the purpose of their conversation.  
-By default the characters are told to discuss the greatest videogames of all time, but you can change this to anything you want, OpenAi is pretty great at having agents talk about pretty much anything.
+To start out, edit the prompts (AGENT_1_PROMPT.txt, AGENT_2_PROMPT.txt, etc.) in the prompts folder to design each agent's personality and the purpose of their conversation.  
+By default the characters are told to discuss the greatest videogames of all time, but you can change this to anything you want. You can also change the preferred local model in OPTIONS.json, under MODEL_NAME.
 
 Next run multi_agent_gpt.py
 
@@ -45,6 +36,9 @@ __Numpad2 will "activate" Agent #2, Numpad3 will "activate" Agent #3.__
 
 __F4 will "pause" all agents__   
 This stops the agents from activating each other. Basically, use this to stop the conversation from continuing any further, and then you can talk to the agents again.
+
+__Numpad9 will forcibly stop the app__
+This ends all agent threads and the input thread, and defers to the main thread to shut down the Flask app. Conversation history stored in backup files will be maintained if the app is re-run.
 
 ## Miscellaneous notes:
 
