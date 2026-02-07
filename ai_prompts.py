@@ -74,19 +74,17 @@ def generate_random_agent_prompt(name) -> str:
         traits_lib = json.load(f)
     dnd_class = random.choice(traits_lib["CLASSES_DND"])
     species = random.choice(traits_lib["SPECIES_DND"])
-    adjective = random.choice(traits_lib["ADJECTIVES"])
-    role = random.choice(traits_lib["ROLES"])
+    adjective = random.choice(list(traits_lib["ADJECTIVES"].keys()))
+    role = random.choice(list(traits_lib["ROLES"].keys()))
     introduction = f"You are {name}, a {species} {dnd_class}. In this conversation, your role is the {adjective} {role}."
     agent_prompt += introduction + "\n\n"
     agent_prompt += "Traits and Behaviors:\n"
-    if role in traits_lib["ROLE_TRAITS"]:
-        traits = traits_lib["ROLE_TRAITS"][role]
-        for trait in traits:
-            agent_prompt += f"- {trait}\n"
-    if adjective in traits_lib["ADJECTIVE_TRAITS"]:
-        traits = traits_lib["ADJECTIVE_TRAITS"][adjective]
-        for trait in traits:
-            agent_prompt += f"- {trait}\n"
+    traits = traits_lib["ROLES"][role]
+    for trait in traits:
+        agent_prompt += f"- {trait}\n"
+    traits = traits_lib["ADJECTIVES"][adjective]
+    for trait in traits:
+        agent_prompt += f"- {trait}\n"
     extra_trait = random.choice(traits_lib["FLAVOR_TRAITS"])
     agent_prompt += f"- {extra_trait}\n"
     return agent_prompt
