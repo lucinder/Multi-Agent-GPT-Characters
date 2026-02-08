@@ -1,13 +1,13 @@
 import win32com.client, pythoncom
 import time
 import os, json
-# Private global DEBUG flag inherited from OPTIONS.json
+# DEBUG flag inherited from OPTIONS.json
 _options_path = os.path.join(os.path.dirname(__file__), "OPTIONS.json")
-__DEBUG = False
+DEBUG = False
 try:
     with open(_options_path, "r") as _f:
         _options = json.load(_f)
-    __DEBUG = _options.get("DEBUG", False)
+    DEBUG = _options.get("DEBUG", False)
 except Exception:
     pass
 
