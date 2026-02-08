@@ -1,11 +1,11 @@
 {
-    "DEBUG": true,
+    "DEBUG": false,
     "MICROPHONE_ENABLED": false,
     "OBS_WEBSOCKETS_ENABLED": false,
     "TTS_ENABLED": true,
     "MODEL_NAME": "deepseek-r1", 
     "AGENT_COUNT": 3,
-    "AGENT_NAMES": ["Oswald", "Tony", "Cecilia", "Bernard", "Newt", "Sophie"],
+    "AGENT_NAMES": ["Malimus", "Bucket", "Crencil", "Bernard", "Newt", "Sophie"],
     "AGENT_VOICES": [
         "Microsoft David Desktop - English (United States)",
         "Microsoft Mark Desktop - English (United States)",

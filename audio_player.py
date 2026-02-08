@@ -12,13 +12,13 @@ from mutagen.mp3 import MP3
 from pydub import AudioSegment
 from rich import print
 
-# Private global DEBUG flag inherited from OPTIONS.json
+# DEBUG flag inherited from OPTIONS.json
 _options_path = os.path.join(os.path.dirname(__file__), "OPTIONS.json")
-__DEBUG = False
+DEBUG = False
 try:
     with open(_options_path, "r") as _f:
         _options = json.load(_f)
-    __DEBUG = _options.get("DEBUG", False)
+    DEBUG = _options.get("DEBUG", False)
 except Exception:
     pass
 
@@ -45,6 +45,7 @@ class AudioManager:
         delete_file (bool): means file is deleted after playback (note that this shouldn't be used for multithreaded function calls)
         play_using_music (bool): means it will use Pygame Music, if false then uses pygame Sound instead
         """
+        if DEBUG: print(f"[yellow][DEBUG] Playing audio!")
         if file_path is None or not os.path.exists(file_path):
             print(f"[bold red]ERROR: File '{file_path}' does not exist!")
             return
@@ -59,6 +60,7 @@ class AudioManager:
             except:
                 # If there's an error here, convert it to a format that Pygame can handle
                 # You can't convert the file in place so just convert it into a temp file that you delete later
+                if DEBUG: print(f"[yellow][DEBUG] Converting audio to WAV.")
                 converted_wav = "temp_convert.wav"
                 subprocess.run(["ffmpeg", "-y", "-i", file_path, "-ar", "48000", "-ac", "2", "-c:a", "pcm_s16le", converted_wav])
                 converted = True
@@ -80,26 +82,54 @@ class AudioManager:
                 pygame.mixer.music.stop()
                 pygame.mixer.quit()
                 try:  
+                    if DEBUG: print(f"[yellow][DEBUG] Attempting to delete {file_path}")
                     os.remove(file_path)
                     if converted:
+                        if DEBUG: print(f"[yellow][DEBUG] Also attempting to delete {file_path}")
                         os.remove(converted_wav) # Remove the converted wav if it was created
                 except PermissionError:
                     print(f"Couldn't remove {file_path} because it is being used by another process.")
 
-    async def play_audio_async(self, file_path):
+    async def play_audio_async(self, file_path, sleep_during_playback=True, delete_file=True):
         """
         Parameters:
         file_path (str): path to the audio file
         """
+        if DEBUG: print(f"[yellow][DEBUG] Playing audio (async)!")
         if not pygame.mixer.get_init(): # Reinitialize mixer if needed
-            pygame.mixer.init(frequency=48000, buffer=1024) 
-        pygame_sound = pygame.mixer.Sound(file_path) 
-        pygame_sound.play()
+            pygame.mixer.init(frequency=48000, buffer=1024)
+        try:
+            pygame_sound = pygame.mixer.Sound(file_path) 
+            pygame_sound.play()
+            converted = False
+        except:
+            # If there's an error here, convert it to a format that Pygame can handle
+            # You can't convert the file in place so just convert it into a temp file that you delete later
+            converted_wav = "temp_convert.wav"
+            subprocess.run(["ffmpeg", "-y", "-i", file_path, "-ar", "48000", "-ac", "2", "-c:a", "pcm_s16le", converted_wav])
+            converted = True
+            pygame.mixer.music.load(converted_wav)
+            pygame.mixer.music.play()
 
         # Sleep for the duration of the audio.
         # Must use asyncio.sleep() because time.sleep() will block the thread, even if it's in an async function
         file_length = self.get_audio_length(file_path)
-        await asyncio.sleep(file_length)
+        if sleep_during_playback:
+            await asyncio.sleep(file_length)
+            # Delete the file
+            if delete_file:
+                # Stop Pygame so file can be deleted
+                # Note: this will stop the audio on other threads as well, so it's not good if you're playing multiple sounds at once
+                pygame.mixer.music.stop()
+                pygame.mixer.quit()
+                try:  
+                    if DEBUG: print(f"[yellow][DEBUG] Attempting to delete {file_path}")
+                    os.remove(file_path)
+                    if converted:
+                        if DEBUG: print(f"[yellow][DEBUG] Also attempting to delete {file_path}")
+                        os.remove(converted_wav) # Remove the converted wav if it was created
+                except PermissionError:
+                    print(f"Couldn't remove {file_path} because it is being used by another process.")
     
     def get_audio_length(self, file_path):
         # Calculate length of the file based on the file format
@@ -111,6 +141,8 @@ class AudioManager:
         elif ext.lower() == '.mp3':
             mp3_file = MP3(file_path)
             file_length = mp3_file.info.length
+        elif ext.lower() == ".dat":
+            file_length = len(AudioSegment.from_file(file_path)) / 1000
         else:
             print("Unknown audio file type. Returning 0 as file length")
             file_length = 0

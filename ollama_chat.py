@@ -57,7 +57,6 @@ class OllamaManager:
                 "role": "user",
                 "content": "Continue."
             })
-        if DEBUG: print("[DEBUG] Last role:", self.chat_history[-1]["role"])
         answer = self.respond()
         self.chat_history.append({"role": "assistant", "content": answer})
         self.save_chat_to_backup()

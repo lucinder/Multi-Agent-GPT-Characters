@@ -94,10 +94,10 @@ AGENT_PROMPTS = [AGENT_1, AGENT_2, AGENT_3, AGENT_4, AGENT_5, AGENT_6]
 # Detect and replace placeholder names in prompts.
 pattern = re.compile(r'\$(.*?)(?=[ a-z]|$)')
 for i in range(0,len(AGENT_PROMPTS)):
-    matches = set(pattern.findall(AGENT_PROMPTS[i])) # Preserve only unique values
+    matches = set(pattern.findall(AGENT_PROMPTS[i]["content"])) # Preserve only unique values
     if "NAME" in matches:
-        AGENT_PROMPTS[i] = AGENT_PROMPTS[i].replace("$NAME",AGENT_NAMES[i])
-AGENT_VOICES = options.get("AGENT_VOICES",["Microsoft David Desktop - English (United States)" for i in range(0,agent_count)])
+        AGENT_PROMPTS[i]["content"] = AGENT_PROMPTS[i]["content"].replace("$NAME",AGENT_NAMES[i])
+AGENT_VOICES = options.get("AGENT_VOICES",["Microsoft David Desktop - English (United States)" for i in range(0,AGENT_COUNT)])
 AGENT_FILTERS = ["Audio Move - Wario Pepper", "Audio Move - Waluigi Pepper", "Audio Move - Gamer Pepper"]
 AGENT_FILTERS += AGENT_FILTERS # repeat for next 3 agents
 
@@ -220,7 +220,7 @@ class Agent():
                 # obswebsockets_manager.set_filter_visibility("Line In", self.filter_name, True)
                 if TTS_ENABLED:
                     # Play the TTS audio (without pausing)
-                    audio_manager.play_audio(tts_file, sleep_during_playback=False, delete_file=True, play_using_music=True)
+                    audio_manager.play_audio(tts_file, sleep_during_playback=True, delete_file=True, play_using_music=True)
 
                     # While the audio is playing, display each sentence on the front-end (DISABLED)
                     # Each dictionary will look like: {'text': 'here is my speech', 'start_time': 11.58, 'end_time': 14.74}
@@ -325,8 +325,8 @@ class Human():
             for idx in range(self.agent_count):
                 agent_number = idx + 1
                 # Activate Agent N
-                if keyboard.is_pressed('num {agent_number}') and self.agent_count >= agent_number:
-                    print("[cyan]Activating Agent {agent_number}")
+                if keyboard.is_pressed(f'num {agent_number}') and self.agent_count >= agent_number:
+                    print(f"[cyan]Activating Agent {agent_number}")
                     agents_paused = False
                     self.all_agents[idx].activated = True
                     time.sleep(1) # Wait for a bit to ensure you don't press this twice in a row
