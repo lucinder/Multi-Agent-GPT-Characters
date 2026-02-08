@@ -147,3 +147,13 @@ def generate_random_agent_prompt_dnd(name, is_animal_fantasy=False) -> str:
         if DEBUG: print(f"[DEBUG] Replacing {match} with {replacement}!")
         agent_prompt = agent_prompt.replace("$"+match,replacement)
     return agent_prompt
+
+def generate_prompts(prompt_count = 6, is_dnd=True, is_animal_fantasy=False):
+    """Generate random prompt files for AI agents. By default, this generates 6 prompts for AI-plays-D&D style games."""
+    agent_names = _options.get("AGENT_NAMES")
+    for i in range(0,prompt_count):
+        # Generate prompt with placeholder name
+        prompt = generate_random_agent_prompt(agent_names[i]) if not is_dnd else generate_random_agent_prompt_dnd(agent_names[i],is_animal_fantasy)
+        # Write prompt to file
+        with open(f"prompts/AGENT_{i+1}_PROMPT.txt","w") as f:
+            f.write(prompt)

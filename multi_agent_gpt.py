@@ -64,7 +64,7 @@ from ollama_chat import OllamaManager
 from whisper_openai import WhisperManager
 # from obs_websockets import OBSWebsocketsManager
 from ai_prompts import *
-import requests as _requests
+# import requests as _requests
 
 # Private global DEBUG flag inherited from OPTIONS.json
 _options_path = os.path.join(os.path.dirname(__file__), "OPTIONS.json")
@@ -85,6 +85,15 @@ try:
     AGENTS_SPEAK_AUTOMATICALLY = options.get("AGENTS_SPEAK_AUTOMATICALLY", False)
 except Exception:
     pass
+
+# Read agent and human names from options
+AGENT_NAMES = options.get("AGENT_NAMES", ["Agent1", "Agent2", "Agent3", "Agent4", "Agent5", "Agent6"])
+AGENT_COUNT = options.get("AGENT_COUNT")
+HUMAN_NAME = options.get("HUMAN_SPEAKER_NAME", "Human")
+AGENT_PROMPTS = [AGENT_1, AGENT_2, AGENT_3, AGENT_4, AGENT_5, AGENT_6]
+AGENT_VOICES = options.get("AGENT_VOICES",["Microsoft David Desktop - English (United States)" for i in range(0,agent_count)])
+AGENT_FILTERS = ["Audio Move - Wario Pepper", "Audio Move - Waluigi Pepper", "Audio Move - Gamer Pepper"]
+AGENT_FILTERS += AGENT_FILTERS # repeat for next 3 agents
 
 # --- OLLAMA API PROXY ENDPOINT ---
 OLLAMA_HOST = options.get("WEBSOCKET_HOST", "127.0.0.1")
@@ -331,38 +340,27 @@ def start_bot(bot):
         # shutdown_event.set()
 
 if __name__ == '__main__':
-
-    # Read agent and human names from OPTIONS.json
-    agent_names = options.get("AGENT_NAMES", ["Agent1", "Agent2", "Agent3"])
-    human_name = options.get("HUMAN_SPEAKER_NAME", "Human")
-
     all_agents = []
-    agent_prompts = [AGENT_1, AGENT_2, AGENT_3]
-    agent_voices = ["Microsoft David Desktop - English (United States)", \
-                    "Microsoft Mark Desktop - English (United States)", \
-                    "Microsoft Zira Desktop - English (United States)"]
-    agent_filters = ["Audio Move - Wario Pepper", "Audio Move - Waluigi Pepper", "Audio Move - Gamer Pepper"]
-
     try:
-        for idx, name in enumerate(agent_names):
+        for idx in range(0,AGENT_COUNT):
             agent = Agent(
-                name,
+                AGENT_NAMES[idx],
                 idx + 1,
-                agent_filters[idx] if idx < len(agent_filters) else f"Filter{idx+1}",
+                AGENT_FILTERS[idx] if idx < len(AGENT_FILTERS) else f"Filter{idx+1}",
                 all_agents,
-                agent_prompts[idx] if idx < len(agent_prompts) else "",
-                agent_voices[idx] if idx < len(agent_voices) else name
+                AGENT_PROMPTS[idx] if idx < len(AGENT_PROMPTS) else "",
+                AGENT_VOICES[idx] if idx < len(AGENT_VOICES) else AGENT_NAMES[idx]
             )
             all_agents.append(agent)
             thread = threading.Thread(target=start_bot, args=(agent,), daemon=True)
             thread.start()
 
         # Human thread
-        human = Human(human_name, all_agents)
+        human = Human(HUMAN_NAME, all_agents)
         human_thread = threading.Thread(target=start_bot, args=(human,), daemon=True)
         human_thread.start()
 
-        print(f"[italic green]!!AGENTS ARE READY TO GO!!\nPress Num 1, Num 2, or Num3 to activate an agent.\nPress F7 to speak to the agents.")
+        print(f"[italic green]AGENTS ARE READY TO GO!!\nPress Num 1, Num 2, or Num3 to activate an agent.\nPress F7 to speak to the agents.")
 
         socketio.run(app)
 

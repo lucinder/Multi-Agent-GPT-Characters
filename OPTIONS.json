@@ -5,7 +5,15 @@
     "TTS_ENABLED": true,
     "MODEL_NAME": "deepseek-r1", 
     "AGENT_COUNT": 3,
-    "AGENT_NAMES": ["Oswald", "Tony", "Cecilia"],
+    "AGENT_NAMES": ["Oswald", "Tony", "Cecilia", "Bernard", "Newt", "Sophie"],
+    "AGENT_VOICES": [
+        "Microsoft David Desktop - English (United States)",
+        "Microsoft Mark Desktop - English (United States)",
+        "Microsoft Zira Desktop - English (United States)",
+        "Microsoft David Desktop - English (United States)",
+        "Microsoft Mark Desktop - English (United States)",
+        "Microsoft Zira Desktop - English (United States)"
+    ],
     "AGENTS_SPEAK_AUTOMATICALLY": true,
     "HUMAN_SPEAKER_NAME": "Human",
     "WEBSOCKET_HOST": "127.0.0.1",
