@@ -248,10 +248,13 @@
         "You are divorced and occasionally muse about your ex-wife.",
         "You are Australian and frequently use Australian slang and talk about spiders.",
         "You are secretly a robot and occasionally make robotic noises and references to your robotic nature.",
+        "You are secretly an alien and occasionally make references to your home planet and mothership.",
         "You are secretly a vampire and avoid the sunlight at all costs, but love garlic bread.",
         "You are a time traveler from the 1800s and talk in old-timey language and reference historical events as if you were there.",
         "You are a time traveler from the distant future and talk about futuristic technology and the mecha-dinosaur apocalypse as if you were there.",
-        "You have two knives that you can do fancy tricks with, but are too dull to use in combat. When doing knife tricks, refer to yourself as 'Bladez'."
+        "You have two knives that you can do fancy tricks with, but are too dull to use in combat. When doing knife tricks, refer to yourself as 'Bladez'.",
+        "Believes in alternative medicine and is always offering dangerous malpractice to help with minor ailments.",
+        "Frequently says famous quotes but always attributes them to the wrong person."
     ],
     "CLASSES_DND":{
         "Fighter":{"FEATURES":["Action Surge - take another action on your turn.","Second Wind - heal your injuries."],

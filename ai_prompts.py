@@ -78,14 +78,25 @@ traits_lib = {}
 with open("random_traits_lib.json","r") as f:
     traits_lib = json.load(f)
 
-pattern = re.compile(r'\$(.*?)(?=[ a-z]|$)') # subrandomizer detection pattern ($ followed by any non-lowercase, non-spaces text)
+pattern = re.compile(r'\$(.*?)(?=[ ,a-z]|$)') # subrandomizer detection pattern ($ followed by any non-lowercase, non-spaces text)
 def subrandomize(table_name) -> str:
     """Given a table name in the random_traits_lib, select a random item from the table."""
     if table_name not in traits_lib:
         print("Table name not found in traits lib!")
-        return ""
+        return "$"+table_name
     choices = traits_lib[table_name] if type(traits_lib[table_name]) == list else list(traits_lib[table_name].keys()) # assume if not list, we're working with a dict
-    return random.choice(choices)
+    return random.choice(choices).lower()
+
+def replace_generics(prompt : str) -> str:
+    """Replace generic strings (e.g. $RANDOM_BIRD, $SPECIES_DND) with random selections from those tables"""
+    matches = set(pattern.findall(prompt)) # Preserve only unique values
+    for match in matches:
+        if match == "NAME":
+            continue
+        replacement = subrandomize(match)
+        if DEBUG: print(f"[DEBUG] Replacing {match} with {replacement}!")
+        prompt = prompt.replace("$"+match,replacement)
+    return prompt
 
 def generate_random_agent_prompt(name) -> str:
     """Generate a random agent prompt using traits from the traits library."""
@@ -102,11 +113,7 @@ def generate_random_agent_prompt(name) -> str:
     extra_trait = random.choice(traits_lib["FLAVOR_TRAITS"])
     agent_prompt += f"- {extra_trait}\n"
     # Replace any instances of subrandomizable content (indicated by "$")
-    matches = set(pattern.findall(agent_prompt)) # Preserve only unique values
-    for match in matches:
-        replacement = subrandomize(match).lower()
-        if DEBUG: print(f"[DEBUG] Replacing {match} with {replacement}!")
-        agent_prompt = agent_prompt.replace("$"+match,replacement)
+    agent_prompt = replace_generics(agent_prompt)
     return agent_prompt
 
 def generate_random_agent_prompt_dnd(name, is_animal_fantasy=False) -> str:
@@ -141,19 +148,15 @@ def generate_random_agent_prompt_dnd(name, is_animal_fantasy=False) -> str:
         for spell in class_features["SPELLS"]:
             agent_prompt += f"- {spell}\n"
     # Replace any instances of subrandomizable content (indicated by "$")
-    matches = set(pattern.findall(agent_prompt)) # Preserve only unique values
-    for match in matches:
-        replacement = subrandomize(match).lower()
-        if DEBUG: print(f"[DEBUG] Replacing {match} with {replacement}!")
-        agent_prompt = agent_prompt.replace("$"+match,replacement)
+    agent_prompt = replace_generics(agent_prompt)
     return agent_prompt
 
-def generate_prompts(prompt_count = 6, is_dnd=True, is_animal_fantasy=False):
+def generate_prompts(prompt_count = 6, placeholder_names=True, is_dnd=True, is_animal_fantasy=False):
     """Generate random prompt files for AI agents. By default, this generates 6 prompts for AI-plays-D&D style games."""
     agent_names = _options.get("AGENT_NAMES")
     for i in range(0,prompt_count):
         # Generate prompt with placeholder name
-        prompt = generate_random_agent_prompt(agent_names[i]) if not is_dnd else generate_random_agent_prompt_dnd(agent_names[i],is_animal_fantasy)
+        prompt = generate_random_agent_prompt("$NAME" if placeholder_names else agent_names[i]) if not is_dnd else generate_random_agent_prompt_dnd("$NAME" if placeholder_names else agent_names[i],is_animal_fantasy)
         # Write prompt to file
         with open(f"prompts/AGENT_{i+1}_PROMPT.txt","w") as f:
             f.write(prompt)

@@ -91,6 +91,12 @@ AGENT_NAMES = options.get("AGENT_NAMES", ["Agent1", "Agent2", "Agent3", "Agent4"
 AGENT_COUNT = options.get("AGENT_COUNT")
 HUMAN_NAME = options.get("HUMAN_SPEAKER_NAME", "Human")
 AGENT_PROMPTS = [AGENT_1, AGENT_2, AGENT_3, AGENT_4, AGENT_5, AGENT_6]
+# Detect and replace placeholder names in prompts.
+pattern = re.compile(r'\$(.*?)(?=[ a-z]|$)')
+for i in range(0,len(AGENT_PROMPTS)):
+    matches = set(pattern.findall(AGENT_PROMPTS[i])) # Preserve only unique values
+    if "NAME" in matches:
+        AGENT_PROMPTS[i] = AGENT_PROMPTS[i].replace("$NAME",AGENT_NAMES[i])
 AGENT_VOICES = options.get("AGENT_VOICES",["Microsoft David Desktop - English (United States)" for i in range(0,agent_count)])
 AGENT_FILTERS = ["Audio Move - Wario Pepper", "Audio Move - Waluigi Pepper", "Audio Move - Gamer Pepper"]
 AGENT_FILTERS += AGENT_FILTERS # repeat for next 3 agents
